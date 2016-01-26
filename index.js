@@ -2,15 +2,26 @@
 
 var config = require('./config');
 
-console.log(config);
-
 var asana = require('asana');
-var client = asana.Client.create().useAccessToken(config.asana.access_token);
+
+var accessToken = process.env.ASANA_ACCESS_TOKEN;
+var workspaceId = process.env.ASANA_WORKSPACE_ID;
+
+var client = asana.Client.create().useAccessToken(accessToken);
+
 
 client.users.me().then(function(me) {
-	client.workspaces.findAll().then(function(collection) {
-		collection.stream().on('data', function(task) {
-			console.log(task);
-		});
-	});
+
+	console.log("Hello " + me.name);
+
+	return client.tags.findByWorkspace(workspaceId);
+})
+.then(function(response) {
+    // There may be more pages of data, we could stream or return a promise
+    // to request those here - for now, let's just return the first page
+    // of items.
+    return response.data;
+ })
+.map(function(tags) {
+	console.log(tags);
 });
