@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 
-console.log('hello world');
+var config = require('./config');
+
+console.log(config);
+
 var asana = require('asana');
-var client = asana.Client.create().useAccessToken('my_access_token');
+var client = asana.Client.create().useAccessToken(config.asana.access_token);
 client.users.me().then(function(me) {
   console.log(me);
 });

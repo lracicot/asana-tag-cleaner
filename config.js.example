@@ -1,0 +1,7 @@
+var config = {};
+
+config.asana = {};
+
+config.asana.access_token = "";
+
+module.exports = config;
