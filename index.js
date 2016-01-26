@@ -37,10 +37,10 @@ function findSimilarTags(tags) {
 
 	var threshold = 2;
 
-	tags.forEach(function (tag1) {
+	tags.forEach(tag1 => {
 		console.log("Tags similar to \"" + tag1.name + "\":");
 
-		tags.forEach(function (tag2) {
+		tags.forEach(tag2 => {
 			// Check the word distance
 			var l = levenshtein.get(tag1.name, tag2.name);
 
