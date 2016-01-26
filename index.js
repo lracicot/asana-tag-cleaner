@@ -35,31 +35,33 @@ function getTags(workspace, client) {
 
 function findSimilarTags(tags) {
 
-	var threshold = 2;
+	return new Promise(function(resolve) {
+		var threshold = 2;
 
-	tags.forEach(tag1 => {
-		console.log("Tags similar to \"" + tag1.name + "\":");
+		tags.forEach(tag1 => {
+			tag1.similar = [];
 
-		tags.forEach(tag2 => {
-			// Check the word distance
-			var l = levenshtein.get(tag1.name, tag2.name);
+			tags.forEach(tag2 => {
+				// Check the word distance
+				var l = levenshtein.get(tag1.name, tag2.name);
 
-			// Check for two inverted words
-			if (l > threshold) {
-				l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$2$1"));
-			}
+				// Check for two inverted words
+				if (l > threshold) {
+					l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$2$1"));
+				}
 
-			// Check for added space or separator
-			if (l > threshold) {
-				l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$1"));
-			}
+				// Check for added space or separator
+				if (l > threshold) {
+					l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$1"));
+				}
 
-			if (l <= threshold && l > 0) {
-				console.log(tag2.name);
-			}
+				if (l <= threshold && l > 0) {
+					tag1.similar.push(tag2);
+				}
+			});
 		});
 
-		console.log("");
+		return resolve(tags);
 	});
 }
 
@@ -68,7 +70,22 @@ client.users.me().then(function(me) {
 	return client.tags.findByWorkspace(workspaceId);
 })
 .then(function() {
-	getTags(workspaceId, client).then(function(tags) {
-		findSimilarTags(tags);
+	return getTags(workspaceId, client);
+})
+.then(function(tags) {
+	return findSimilarTags(tags);
+})
+.then(function(tags) {
+	tags.forEach(tag => {
+		if (tag.similar.length == 0) {
+			return;
+		}
+
+		console.log("Tags similar to \"" + tag.name + "\":");
+
+		tag.similar.forEach(similarTag => {
+			console.log(similarTag.name);
+		});
+		console.log("");
 	});
 });
