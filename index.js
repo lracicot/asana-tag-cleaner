@@ -2,6 +2,7 @@
 
 var asana = require('asana');
 var levenshtein = require('fast-levenshtein');
+var TagsManager = require('./src/TagsManager');
 
 var accessToken = process.env.ASANA_ACCESS_TOKEN;
 var workspaceId = process.env.ASANA_WORKSPACE_ID;
@@ -17,73 +18,19 @@ if (!workspaceId) {
 }
 
 var client = asana.Client.create().useAccessToken(accessToken);
+var tagsManager = new TagsManager(client, workspaceId);
 
-
-function getTags(workspace, client) {
-    return client.tags.findByWorkspace(workspace)
-    .then(collection => collection.fetch())
-    .then(function(tags) {
-        var tagList = [];
-
-        tags.forEach(tag => {
-            tagList.push(tag);
-        });
-
-        return tagList;
-    });
-}
-
-function findSimilarTags(tags) {
-
-	return new Promise(function(resolve) {
-		var threshold = 2;
-
-		tags.forEach(tag1 => {
-			tag1.similar = [];
-
-			tags.forEach(tag2 => {
-				// Check the word distance
-				var l = levenshtein.get(tag1.name, tag2.name);
-
-				// Check for two inverted words
-				if (l > threshold) {
-					l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$2$1"));
-				}
-
-				// Check for added space or separator
-				if (l > threshold) {
-					l = levenshtein.get(tag1.name, tag2.name.replace(/^(\w+)(\s|-|_)(\w+)$/,"$3$1"));
-				}
-
-				if (l <= threshold && l > 0) {
-					tag1.similar.push(tag2);
-				}
-			});
-		});
-
-		return resolve(tags);
+tagsManager.getTags(workspaceId, client)
+.then(function(tags) {
+	return tagsManager.findSimilarTags(tags, function (word1, word2) {
+		return levenshtein.get(word1, word2);
 	});
-}
-
-client.users.me().then(function(me) {
-	console.log("Hello " + me.name);
-	return client.tags.findByWorkspace(workspaceId);
 })
-.then(function() {
-	return getTags(workspaceId, client);
-})
-.then(function(tags) {
-	return findSimilarTags(tags);
-})
-.then(function(tags) {
-	tags.forEach(tag => {
-		if (tag.similar.length == 0) {
-			return;
-		}
+.then(function(similar) {
+	similar.forEach(similarTags => {
+		console.log("Similar tags:");
 
-		console.log("Tags similar to \"" + tag.name + "\":");
-
-		tag.similar.forEach(similarTag => {
+		similarTags.forEach(similarTag => {
 			console.log(similarTag.name);
 		});
 		console.log("");
