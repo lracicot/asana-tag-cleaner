@@ -36,7 +36,7 @@ tagsManager.getTags(workspaceId, client)
 					pattern: /^[\d]+$/,
 					message: 'This should be a numeric value',
 					required: false,
-					description: "Enter the number of that tag to keep, or <enter> to skip."
+					description: "Enter the number of the tag to keep, or <enter> to skip."
 				}
 			}
 		};
@@ -44,6 +44,12 @@ tagsManager.getTags(workspaceId, client)
 		Prompt.start();
 		Prompt.get(schema, function (error, result) {
 			if (error) { console.log(error); return 1; }
+			if (result.keepIndex == "") {
+				if (index + 1 < tags.length) {
+					printSimilarTags(index+1);
+				}
+				return;
+			}
 
 			tags[index].forEach(tag => {
 				if (tag != tags[index][result.keepIndex-1]) {
