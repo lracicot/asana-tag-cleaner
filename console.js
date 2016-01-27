@@ -27,7 +27,7 @@ tagsManager.getTags(workspaceId, client)
 		return Levenshtein.get(word1, word2);
 	});
 })
-// Here are the console interaction
+// Console interaction
 .then(function(tags) {
 	promptKeepTag = function(index) {
 		var schema = {
