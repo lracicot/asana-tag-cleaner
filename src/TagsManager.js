@@ -67,13 +67,9 @@
 		var client = this.client;
 		client.tasks.findByTag(mergeIt.id).then(function(collection) {
 			collection.stream().on('data', function(task) {
-				// Tag deletion is not implemented yet in Asana, but we can remove the tag from the task.
 				client.tasks.removeTag(task.id, {tag: mergeIt.id});
 				client.tasks.addTag(task.id, {tag: keepIt.id});
 			});
-		}).then(function() {
-			// Tag deletion is not implemented yet in Asana.
-			//client.tags.delete(mergeIt.id);
 		});
 	};
 
