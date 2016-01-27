@@ -12,6 +12,12 @@ Install with git:
 git clone git@github.com:lracicot/asana-tag-cleaner.git
 ```
 
+Make sure that console.js is executable:
+
+```sh
+chmod +x console.js
+```
+
 ## Usage
 
 You will need to get an acces token from Asana. You will the need to set the env variables for the access token and the workspace id.
