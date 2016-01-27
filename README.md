@@ -10,6 +10,8 @@ Install with git:
 
 ```sh
 git clone git@github.com:lracicot/asana-tag-cleaner.git
+cd asana-tag-cleaner
+npm install
 ```
 
 Make sure that console.js is executable:

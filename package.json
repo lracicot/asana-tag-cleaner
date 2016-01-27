@@ -1,0 +1,17 @@
+{
+  "name": "asana-tag-cleaner",
+  "version": "1.0.0",
+  "description": "Frienly tool to merge similar tags in asana",
+  "main": "index.js",
+  "dependencies": {
+    "asana": "^0.14.0",
+    "fast-levenshtein": "^1.1.0",
+    "prompt": "^0.2.14"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Louis Racicot",
+  "license": "ISC"
+}
