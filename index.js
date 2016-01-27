@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
-var asana = require('asana');
-var levenshtein = require('fast-levenshtein');
+var Asana = require('asana');
+var Levenshtein = require('fast-levenshtein');
 var TagsManager = require('./src/TagsManager');
+var Prompt = require('prompt');
 
 var accessToken = process.env.ASANA_ACCESS_TOKEN;
 var workspaceId = process.env.ASANA_WORKSPACE_ID;
@@ -17,22 +18,58 @@ if (!workspaceId) {
 	return 1;
 }
 
-var client = asana.Client.create().useAccessToken(accessToken);
+var client = Asana.Client.create().useAccessToken(accessToken);
 var tagsManager = new TagsManager(client, workspaceId);
 
 tagsManager.getTags(workspaceId, client)
 .then(function(tags) {
 	return tagsManager.findSimilarTags(tags, function (word1, word2) {
-		return levenshtein.get(word1, word2);
+		return Levenshtein.get(word1, word2);
 	});
 })
-.then(function(similar) {
-	similar.forEach(similarTags => {
-		console.log("Similar tags:");
+// Here are the console interaction
+.then(function(tags) {
+	promptKeepTag = function(index) {
+		var schema = {
+			properties: {
+				keepIndex: {
+					pattern: /^[\d]+$/,
+					message: 'This should be a numeric value',
+					required: false,
+					description: "Enter the number of that tag to keep, or <enter> to skip."
+				}
+			}
+		};
 
-		similarTags.forEach(similarTag => {
-			console.log(similarTag.name);
+		Prompt.start();
+		Prompt.get(schema, function (error, result) {
+			if (error) { console.log(error); return 1; }
+
+			tags[index].forEach(tag => {
+				if (tag != tags[index][result.keepIndex-1]) {
+					tagsManager.mergeTag(tag, tags[index][result.keepIndex-1]);
+				}
+			});
+
+			console.log(tags[index][result.keepIndex-1]);
+
+			if (index + 1 < tags.length) {
+				printSimilarTags(index+1);
+			}
 		});
-		console.log("");
-	});
+	}
+
+	printSimilarTags = function(index) {
+		similar = tags[index];
+
+		console.log("These tags are similar. Which one do you want to keep?");
+
+		similar.forEach(function(tag, i) {
+			console.log((i+1) + ") " + tag.name);
+		});
+
+		promptKeepTag(index)
+	};
+
+	printSimilarTags(0);
 });

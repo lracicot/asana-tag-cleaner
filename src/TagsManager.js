@@ -25,7 +25,8 @@
 			var similarCluster = []
 
 			tags.forEach(tag1 => {
-				tag1.similar = [];
+				var similarTags = [];
+				similarTags.push(tag1);
 
 				if (similarFound.indexOf(tag1) > -1) {
 					return;
@@ -46,24 +47,35 @@
 					}
 
 					if (l <= threshold && l > 0) {
-						tag1.similar.push(tag2);
+						similarTags.push(tag2);
 						similarFound.push(tag2);
 					}
 				});
-			});
 
-			tags.forEach(tag => {
-				if (tag.similar.length == 0) {
+				if (similarTags.length == 1) {
 					return;
 				}
 
-				tag.similar.push({id: tag.id, name: tag.name});
-				similarCluster.push(tag.similar);
+				similarCluster.push(similarTags);
 			});
 
 			return resolve(similarCluster);
 		});
-	}
+	};
+
+	TagsManager.prototype.mergeTag = function(mergeIt, keepIt) {
+		var client = this.client;
+		client.tasks.findByTag(mergeIt.id).then(function(collection) {
+			collection.stream().on('data', function(task) {
+				// Tag deletion is not implemented yet in Asana, but we can remove the tag from the task.
+				client.tasks.removeTag(task.id, {tag: mergeIt.id});
+				client.tasks.addTag(task.id, {tag: keepIt.id});
+			});
+		}).then(function() {
+			// Tag deletion is not implemented yet in Asana.
+			//client.tags.delete(mergeIt.id);
+		});
+	};
 
 	module.exports = TagsManager;
 })();
