@@ -51,8 +51,6 @@ tagsManager.getTags(workspaceId, client)
 				}
 			});
 
-			console.log(tags[index][result.keepIndex-1]);
-
 			if (index + 1 < tags.length) {
 				printSimilarTags(index+1);
 			}
