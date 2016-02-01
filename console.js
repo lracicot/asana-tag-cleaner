@@ -4,9 +4,25 @@ var Asana = require('asana');
 var Levenshtein = require('fast-levenshtein');
 var TagsManager = require('./src/TagsManager');
 var Prompt = require('prompt');
+var argv = require('yargs').argv;
+
+if ("h" in argv) {
+	console.log("usage: ./console                       run the script");
+	console.log("   or: ./console -t access_token       specify an access token for asana");
+	console.log("   or: ./console -w workspace_id       specify a workspace id for asana");
+	return 1;
+}
 
 var accessToken = process.env.ASANA_ACCESS_TOKEN;
 var workspaceId = process.env.ASANA_WORKSPACE_ID;
+
+if ("t" in argv) {
+	accessToken = argv.t;
+}
+
+if ("w" in argv) {
+	workspaceId = argv.w;
+}
 
 if (!accessToken) {
 	console.error('Please add the ASANA_ACCESS_TOKEN to your env variables');
