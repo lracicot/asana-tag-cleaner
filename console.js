@@ -8,8 +8,8 @@ var argv = require('yargs').argv;
 
 if ("h" in argv) {
 	console.log("usage: ./console                       run the script");
-	console.log("   or: ./console -t access_token       specify an access token for asana");
-	console.log("   or: ./console -w workspace_id       specify a workspace id for asana");
+	console.log("   or: ./console.js -t access_token       specify an access token for asana");
+	console.log("   or: ./console.js -w workspace_id       specify a workspace id for asana");
 	return 1;
 }
 
@@ -37,7 +37,7 @@ if (!workspaceId) {
 var client = Asana.Client.create().useAccessToken(accessToken);
 var tagsManager = new TagsManager(client, workspaceId);
 
-tagsManager.getTags(workspaceId, client)
+tagsManager.getTags(workspaceId)
 .then(function(tags) {
 	return tagsManager.findSimilarTags(tags, function (word1, word2) {
 		return Levenshtein.get(word1, word2);
