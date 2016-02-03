@@ -4,8 +4,8 @@
 		this.workspace = workspace;
 	};
 
-	TagsManager.prototype.getTags = function(workspace, client) {
-	    return client.tags.findByWorkspace(workspace)
+	TagsManager.prototype.getTags = function(workspace) {
+	    return this.client.tags.findByWorkspace(workspace)
 	    .then(collection => collection.fetch())
 	    .then(function(tags) {
 	        var tagList = [];

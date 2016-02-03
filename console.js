@@ -3,7 +3,7 @@
 var Asana = require('asana');
 var Levenshtein = require('fast-levenshtein');
 var TagsManager = require('./src/TagsManager');
-var Prompt = require('prompt');
+var prompt = require('prompt-sync').prompt;
 var argv = require('yargs').argv;
 
 if ("h" in argv) {
@@ -44,52 +44,24 @@ tagsManager.getTags(workspaceId)
 	});
 })
 // Console interaction
-.then(function(tags) {
-	promptKeepTag = function(index) {
-		var schema = {
-			properties: {
-				keepIndex: {
-					pattern: /^[\d]+$/,
-					message: 'This should be a numeric value',
-					required: false,
-					description: "Enter the number of the tag to keep, or <enter> to skip."
-				}
-			}
-		};
+.filter(function(similar) {
 
-		Prompt.start();
-		Prompt.get(schema, function (error, result) {
-			if (error) { console.log(error); return 1; }
-			if (result.keepIndex == "") {
-				if (index + 1 < tags.length) {
-					printSimilarTags(index+1);
-				}
-				return;
-			}
+	process.stdout.write("These tags are similar. Which one do you want to keep?\n");
 
-			tags[index].forEach(tag => {
-				if (tag != tags[index][result.keepIndex-1]) {
-					tagsManager.mergeTag(tag, tags[index][result.keepIndex-1]);
-				}
-			});
+	similar.forEach((tag, i) => {
+		console.log((i+1) + ") " + tag.name);
+	});
 
-			if (index + 1 < tags.length) {
-				printSimilarTags(index+1);
-			}
-		});
+	process.stdout.write("Enter the number of the tag to keep, or <enter> to skip: ");
+	var result = prompt();
+
+	if (result == "") {
+		return;
 	}
 
-	printSimilarTags = function(index) {
-		similar = tags[index];
-
-		console.log("These tags are similar. Which one do you want to keep?");
-
-		similar.forEach(function(tag, i) {
-			console.log((i+1) + ") " + tag.name);
-		});
-
-		promptKeepTag(index)
-	};
-
-	printSimilarTags(0);
+	similar.forEach(tag => {
+		if (tag != similar[result-1]) {
+			tagsManager.mergeTag(tag, similar[result-1]);
+		}
+	});
 });

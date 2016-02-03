@@ -7,7 +7,7 @@
     "asana": "^0.14.0",
     "express": "^4.13.4",
     "fast-levenshtein": "^1.1.0",
-    "prompt": "^0.2.14"
+    "prompt-sync": "^3.0.0"
   },
   "devDependencies": {},
   "scripts": {
