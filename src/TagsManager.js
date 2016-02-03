@@ -7,7 +7,7 @@
 	TagsManager.prototype.getTags = function(workspace) {
 	    return this.client.tags.findByWorkspace(workspace)
 	    .then(collection => collection.fetch())
-	    .then(function(tags) {
+	    .then(tags => {
 	        var tagList = [];
 
 	        tags.forEach(tag => {
@@ -19,7 +19,7 @@
 	}
 
 	TagsManager.prototype.findSimilarTags = function(tags, distanceCalculator) {
-		return new Promise(function(resolve) {
+		return new Promise(resolve => {
 			var threshold = 2;
 			var similarFound = [];
 			var similarCluster = []
@@ -65,8 +65,8 @@
 
 	TagsManager.prototype.mergeTag = function(mergeIt, keepIt) {
 		var client = this.client;
-		client.tasks.findByTag(mergeIt.id).then(function(collection) {
-			collection.stream().on('data', function(task) {
+		client.tasks.findByTag(mergeIt.id).then(collection => {
+			collection.stream().on('data', task => {
 				client.tasks.removeTag(task.id, {tag: mergeIt.id});
 				client.tasks.addTag(task.id, {tag: keepIt.id});
 			});

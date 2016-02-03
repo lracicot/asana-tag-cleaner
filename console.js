@@ -45,13 +45,14 @@ if (workspaceId != null) {
 function processWorkspace(workspace)
 {
 	tagsManager.getTags(workspace.id)
-	.then(function(tags) {
+	.then(tags => {
 		return tagsManager.findSimilarTags(tags, function (word1, word2) {
 			return Levenshtein.get(word1, word2);
 		});
 	})
 	// Console interaction
-	.filter(function(similar) {
+	.filter(similar => {
+		var result;
 
 		process.stdout.write("["+workspace.name+"] These tags are similar.\n");
 		process.stdout.write("Which one do you want to keep?\n");
@@ -61,7 +62,7 @@ function processWorkspace(workspace)
 		});
 
 		process.stdout.write("Enter the number of the tag to keep, or <enter> to skip: ");
-		var result = prompt();
+		result = prompt();
 
 		if (result == "" || result == null) {
 			return;
