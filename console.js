@@ -14,7 +14,7 @@ if ("h" in argv) {
 }
 
 var accessToken = process.env.ASANA_ACCESS_TOKEN;
-var workspaceId = process.env.ASANA_WORKSPACE_ID;
+var workspaceId = null;
 
 if ("t" in argv) {
 	accessToken = argv.t;
@@ -29,39 +29,48 @@ if (!accessToken) {
 	return 1;
 }
 
-if (!workspaceId) {
-	console.error('Please add the ASANA_WORKSPACE_ID to your env variables');
-	return 1;
-}
-
 var client = Asana.Client.create().useAccessToken(accessToken);
 var tagsManager = new TagsManager(client, workspaceId);
 
-tagsManager.getTags(workspaceId)
-.then(function(tags) {
-	return tagsManager.findSimilarTags(tags, function (word1, word2) {
-		return Levenshtein.get(word1, word2);
-	});
-})
-// Console interaction
-.filter(function(similar) {
+if (workspaceId != null) {
+	client.workspaces.findById(workspaceId)
+	.then(processWorkspace);
+	
+} else {
+	client.workspaces.findAll()
+	.then(collection => collection.fetch())
+	.filter(processWorkspace);
+}
 
-	process.stdout.write("These tags are similar. Which one do you want to keep?\n");
+function processWorkspace(workspace)
+{
+	tagsManager.getTags(workspace.id)
+	.then(function(tags) {
+		return tagsManager.findSimilarTags(tags, function (word1, word2) {
+			return Levenshtein.get(word1, word2);
+		});
+	})
+	// Console interaction
+	.filter(function(similar) {
 
-	similar.forEach((tag, i) => {
-		console.log((i+1) + ") " + tag.name);
-	});
+		process.stdout.write("["+workspace.name+"] These tags are similar.\n");
+		process.stdout.write("Which one do you want to keep?\n");
 
-	process.stdout.write("Enter the number of the tag to keep, or <enter> to skip: ");
-	var result = prompt();
+		similar.forEach((tag, i) => {
+			console.log((i+1) + ") " + tag.name);
+		});
 
-	if (result == "") {
-		return;
-	}
+		process.stdout.write("Enter the number of the tag to keep, or <enter> to skip: ");
+		var result = prompt();
 
-	similar.forEach(tag => {
-		if (tag != similar[result-1]) {
-			tagsManager.mergeTag(tag, similar[result-1]);
+		if (result == "" || result == null) {
+			return;
 		}
+
+		similar.forEach(tag => {
+			if (tag != similar[result-1]) {
+				tagsManager.mergeTag(tag, similar[result-1]);
+			}
+		});
 	});
-});
+}
